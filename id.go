@@ -1,5 +1,5 @@
 // 29 july 2018
-package mdlist
+package main
 
 import (
 	"sync"

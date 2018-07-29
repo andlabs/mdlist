@@ -5,11 +5,6 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
-struct Game {
-	ID			ID
-	DisplayName	string		// ASCII only
-}
-
 type Region int
 const (
 	Japan Region = iota
