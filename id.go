@@ -2,17 +2,35 @@
 package main
 
 import (
+	"fmt"
+	"strconv"
 	"sync"
 )
 
-type ID int
+type ID int64
 
-type IDPool struct {
-	next		ID
-	mu		sync.Mutex
+func IDFromString(s string) (ID, error) {
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return ID(i), nil
 }
 
-func (i *IDPool) Generate() ID {
+func (i ID) String() string {
+	return fmt.Sprint(i)
+}
+
+type IDPool struct {
+	mu		sync.Mutex
+	next		ID
+}
+
+func NewIDPool() *IDPool {
+	return new(IDPool)
+}
+
+func (i *IDPool) Next() ID {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.next++

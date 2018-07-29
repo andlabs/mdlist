@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 )
 
 type GameType int
@@ -86,10 +87,63 @@ func (g GameType) String() string {
 
 type Game struct {
 	ID			ID
-	DisplayName	string		// ASCII only
+	Name		string		// ASCII only
+	Year			int			// earliest year of actual release or TODO in the case of an unreleased game
+	// TODO YearAccuracy?
 	Type			GameType
 }
 
+type GameDatabase struct {
+	mu		sync.RWMutex
+	games	map[ID]*Game
+	pool		*IDPool
+}
+
+func NewGameDatabase() *GameDatabase {
+	g := new(GameDatabase)
+	g.games = make(map[ID]*Game)
+	g.pool = NewIDPool()
+	return g
+}
+
+func (g *GameDatabase) Add(name string, year int, ty GameType) *Game {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	game := &Game{
+		Name:	name,
+		Year:		year,
+		Type:	ty,
+	}
+	game.ID = g.pool.Next()
+	g.games[game.ID] = game
+	return game
+}
+
+func (g *GameDatabase) Lookup(id ID) *Game {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	ret, _ := g.games[id]		// comma-ok syntax to avoid creating nil entries
+	return ret
+}
+
+func (g *GameDatabase) ForEach(f func(game *Game)) {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	for _, game := range g.games {
+		f(game)
+	}
+}
+
 func main() {
-	fmt.Println(GameTypeUserHelp())
+	g := NewGameDatabase()
+	g.Add("Mega Drive", 1988, MegaDriveHardware)
+	g.Add("Space Harrier II", 1988, MegaDriveGame)
+	g.Add("Super Thunder Blade", 1988, MegaDriveGame)
+	g.Add("Altered Beast", 1988, MegaDriveGame)
+	g.Add("Osomatsu-kun: Hachamecha Gekijou", 1988, MegaDriveGame)
+	g.Add("Alex Kidd in the Enchanted Castle", 1989, MegaDriveGame)
+	g.Add("Phantasy Star II", 1989, MegaDriveGame)
+	g.ForEach(func(game *Game) {
+		fmt.Printf("%d %-50s %v\n", game.Year, game.Name, game.Type)
+	})
 }
