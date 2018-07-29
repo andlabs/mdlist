@@ -3,11 +3,10 @@ package mdlist
 
 import (
 	"golang.org/x/crypto/blake2b"
-	"github.com/google/uuid"
 )
 
 struct Game {
-	GUID		uuid.UUID
+	ID			ID
 	DisplayName	string		// ASCII only
 }
 
@@ -24,7 +23,7 @@ const (
 )
 
 type Release struct {
-	GUID				uuid.UUID
+	ID					ID
 	Game				*Game
 	Region				Region
 	Name				string
@@ -40,7 +39,7 @@ type Release struct {
 }
 
 type Asset struct {
-	GUID		uuid.UUID
+	ID			ID
 	Size			int64
 	MIME		string
 	Blake2b512	[blake2b.Size]byte
