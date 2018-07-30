@@ -30,6 +30,14 @@ func NewIDPool() *IDPool {
 	return new(IDPool)
 }
 
+func (i *IDPool) Mark(visited ID) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	if i.next < visited {
+		i.next = visited
+	}
+}
+
 func (i *IDPool) Next() ID {
 	i.mu.Lock()
 	defer i.mu.Unlock()

@@ -3,6 +3,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"encoding/json"
 	"sync"
 )
 
@@ -106,6 +108,19 @@ func NewGameDatabase() *GameDatabase {
 	return g
 }
 
+func ReadGameDatabase(r io.Reader) (*GameDatabase, error) {
+	g := new(GameDatabase)
+	err := json.NewDecoder(r).Decode(&(g.games))
+	if err != nil {
+		return nil, err
+	}
+	g.pool = NewIDPool()
+	for id, _ := range g.games {
+		g.pool.Mark(id)
+	}
+	return g, nil
+}
+
 func (g *GameDatabase) Add(name string, year int, ty GameType) *Game {
 	g.mu.Lock()
 	defer g.mu.Unlock()
@@ -132,6 +147,12 @@ func (g *GameDatabase) ForEach(f func(game *Game)) {
 	for _, game := range g.games {
 		f(game)
 	}
+}
+
+func (g *GameDatabase) Write(w io.Writer) error {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	return json.NewEncoder(w).Encode(g.games)
 }
 
 func main() {
