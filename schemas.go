@@ -25,9 +25,12 @@ type Release struct {
 	NameRomanized		string	// Japan, Korea, Asia only
 	NameSource			string
 	Publisher				string
-	ReleaseDate			time.Time
+	Unlicensed			bool
+	ReleaseDate			time.Time		// use 0 for unreleased games (TODO?)
 	ReleaseDateAccuracy	time.Time		// each component: 1 in the most precise known digit (so 199?-??-?? means a ReleaseDate of 1990-1-1 and Accuracy of 10-0-0)
 	ReleaseDateSource		string		// if unspecified (empty), marked as unconfirmed; accuracy should be to the year from the title screen of the game
+	BuildDate				time.Time		// for prototypes
+	BuildDateAccuracy		time.Time
 	SerialNumber			string
 	// TODO details for variant releases like Sega Classics? if so the asset map will need to change to allow a single ROM to map to multiple releases
 	// TODO box type for arranging image assets?
