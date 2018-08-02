@@ -1,6 +1,28 @@
 // 1 august 2018
 package mdlist
 
+type GameType int
+const (
+	Hardware		GameType = iota
+	Game
+	Accessory
+)
+
+type Platform int
+const (
+	MegaDrive Platform = iota
+	MegaCD
+	Mega32X
+	Pico
+	Arcade
+	Teradrive
+)
+
+type Game struct {
+	Type		GameType
+	Platform	Platform
+}
+
 type Region int
 const (
 	Japan Region = iota
