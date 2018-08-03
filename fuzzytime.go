@@ -2,9 +2,11 @@
 package fuzzytime
 
 import (
+	"fmt"
 	"time"
 )
 
+// TODO document this
 type Accuracy int
 const (
 	Know20XX Accuracy = iota
