@@ -1,76 +1,97 @@
 // 2 august 2018
-package mdlist
+package fuzzytime
 
 import (
 	"time"
 )
 
+type Accuracy int
+const (
+	Know20XX Accuracy = iota
+	Know200X
+	Know2006
+	Know200601
+	Know20060102
+	// TODO include timestamp?
+)
+
+// FuzzyTime is a fuzzy time.Time, which stores date values that
+// can have some parts be unknown; see the Accuracy type to see
+// how. The zero FuzzyTime is legal; it is the normalized form of
+// an invalid FuzzyTime.
 type FuzzyTime struct {
 	Time		time.TIme
-	Accuracy	time.Time
+	Accuracy	Accuracy
 }
 
-type timeComponents struct {
-	year		int
-	month	time.Month
-	day		int
-	hour		int
-	minute	int
-	second	int
-	ns		int
-	loc		*time.Location
-}
-
-func fromTimeComponents(tc timeComponents) time.Time {
-	return time.Date(tc.year, tc.month, tc.day,
-		tc.hour, tc.minute, tc.second,
-		tc.ns, tc.loc)
-}
-
-func toTimeComponents(t time.Time) timeComponents {
-	tc := timeComponents{}
-	tc.year, tc.month, tc.day = t.Date()
-	tc.hour, tc.minute, tc.second = t.Clock()
-	tc.ns = t.Nanosecond()
-	tc.loc = t.Location()
-	return tc
-}
-
-func normalizeTimePiece(cont bool, val int, acc int) (int, bool) {
-	if !cont {
-		return val, false
+// IsValid returns whether f is valid. f is invalid if either the Time
+// stored within is zero or the Accuracy value is invalid.
+func (f FuzzyTime) IsValid() bool {
+	switch f.Accuracy {
+	case Know20XX:
+	case Know200X:
+	case Know2006:
+	case Know200601:
+	case Know20060102:
+		// do nothing
+	default:
+		return false
 	}
-	if acc == 0 {
-		return 0, true
-	}
-	mul := 1
-	for acc != 1 {
-		val /= 10
-		mul *= 10
-		acc /= 10
-	}
-	return val * mul, false
+	return !f.Time.IsZero()
 }
 
-func normalizeTimeMonth(cont bool, val time.Month, acc time.Month) (time.Month, bool) {
-	norm, cont := normalizeTimeMonth(cont, int(val), int(acc))
-	return time.Month(norm), cont
-}
-
+// Normalized returns f with the Time field changed so that any
+// unknown field is either 0 or 1 (where appropriate) and so that
+// the time zone is UTC. This allows normalized times to be
+// compared and manipulated with standard time.Time functions
+// and methods. Calling Normalized on an invalid FuzzyTime
+// returns a zero FuzzyTime.
 func (f FuzzyTime) Normalized() FuzzyTime {
-	tc := toTimeComponents(f.Time)
-	ac := toTimeComponents(f.Accuracy)
-	cont := true
-	tc.ns, cont = normalizeTimePiece(cont, tc.ns, ac.ns)
-	tc.second, cont = normalizeTimePiece(cont, tc.second, ac.second)
-	tc.minute, cont = normalizeTimePiece(cont, tc.minute, ac.minute)
-	tc.hour, cont = normalizeTimePiece(cont, tc.hour, ac.hour)
-	tc.day, cont = normalizeTimePiece(cont, tc.day, ac.day)
-	tc.month, cont = normalizeTimeMonth(cont, tc.month, ac.month)
-	tc.year, cont = normalizeTimePiece(cont, tc.year, ac.year)
-	return fromTimeComponents(tc)
+	if !f.IsValid() {
+		return FuzzyTime{}
+	}
+	y, m, d := f.Time.Date()
+	switch f.Accuracy {
+	case Know20XX:
+		y /= 100
+		y *= 100
+		m = 1
+		d = 1
+	case Know200X:
+		y /= 10
+		y *= 10
+		m = 1
+		d = 1
+	case Know2006:
+		m = 1
+		d = 1
+	case Know200601:
+		d = 1
+	}
+	return FuzzyTime{
+		Time:		time.Date(y, m, d, 0, 0, 0, 0, time.UTC),
+		Accuracy:		f.Accuracy,
+	}
 }
 
 func (f FuzzyTime) String() string {
 	f = f.Normalized()
+	if !f.IsValid() {
+		return "<invalid-fuzzy-time>"
+	}
+	y, m, d := f.Time.Date()
+	switch f.Accuracy {
+	case Know20XX:
+		return fmt.Sprintf("%d??", y / 100)
+	case Know200X:
+		return fmt.Sprintf("%d?", y / 10)
+	// TODO use time.Time.Format() for these three cases?
+	case Know2006:
+		return fmt.Sprintf("%d", y)
+	case Know200601:
+		return fmt.Sprintf("%d-%02d", y, m)
+	case Know20060102:
+		return fmt.Sprintf("%d-%02d-%02d", y, m, d)
+	}
+	panic("unreachable")
 }
