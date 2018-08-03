@@ -45,7 +45,7 @@ type Release struct {
 	Nonphysical		bool		// TODO NonPhysical? Digital?
 	Unlicensed		bool
 	Prototype			bool
-	ReleaseDate		FuzzyDate
+	ReleaseDate		FuzzyTime
 	ReleaseDateSource	string
 	BuildDate			FuzzyTime
 }
