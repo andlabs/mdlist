@@ -1,6 +1,8 @@
 // 2 august 2018
 package fuzzytime
 
+// TODO document all the exported functions and types
+
 import (
 	"fmt"
 	"time"
@@ -22,8 +24,82 @@ const (
 // how. The zero FuzzyTime is legal; it is the normalized form of
 // an invalid FuzzyTime.
 type FuzzyTime struct {
-	Time		time.TIme
+	Time		time.Time
 	Accuracy	Accuracy
+}
+
+// TODO have a Date function?
+
+var TODOParseError = fmt.Errorf("parse error")
+
+func isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func Parse(s string) (FuzzyTime, error) {
+	if len(s) != 4 && len(s) != 7 && len(s) != 10 {
+		return FuzzyTime{}, TODOParseError
+	}
+	if !isDigit(s[0]) {
+		return FuzzyTime{}, TODOParseError
+	}
+	year := int(s[0] - '0') * 1000
+	if !isDigit(s[1]) {
+		return FuzzyTime{}, TODOParseError
+	}
+	year += int(s[1] - '0') * 100
+	if s[2] == '?' {
+		if s[3] != '?' || len(s) != 4 {
+			return FuzzyTime{}, TODOParseError
+		}
+		return FuzzyTime{
+			Time:		time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
+			Accuracy:		Know20XX,
+		}, nil
+	}
+	if !isDigit(s[2]) {
+		return FuzzyTime{}, TODOParseError
+	}
+	year += int(s[2] - '0') * 10
+	if s[3] == '?' {
+		if len(s) != 4 {
+			return FuzzyTime{}, TODOParseError
+		}
+		return FuzzyTime{
+			Time:		time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
+			Accuracy:		Know200X,
+		}, nil
+	}
+	if !isDigit(s[3]) {
+		return FuzzyTime{}, TODOParseError
+	}
+	year += int(s[3] - '0') * 1
+	if len(s) == 4 {
+		return FuzzyTime{
+			Time:		time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
+			Accuracy:		Know2006,
+		}, nil
+	}
+	// TODO accept 2006-?? as an alternate for 2006?
+	// TODO use time.Parse() for these?
+	if s[4] != '-' || !isDigit(s[5]) || !isDigit(s[6]) {
+		return FuzzyTime{}, TODOParseError
+	}
+	month := time.Month(s[5] - '0') * 10 + time.Month(s[6] - '0')
+	if len(s) == 7 {
+		return FuzzyTime{
+			Time:		time.Date(year, month, 1, 0, 0, 0, 0, time.UTC),
+			Accuracy:		Know200601,
+		}, nil
+	}
+	if s[7] != '-' || !isDigit(s[8]) || !isDigit(s[9]) {
+		return FuzzyTime{}, TODOParseError
+	}
+	day := int(s[8] - '0') * 10 + int(s[9] - '0')
+	return FuzzyTime{
+		Time:		time.Date(year, month, day, 0, 0, 0, 0, time.UTC),
+		Accuracy:		Know20060102,
+	}, nil
 }
 
 // IsValid returns whether f is valid. f is invalid if either the Time
@@ -96,72 +172,4 @@ func (f FuzzyTime) String() string {
 		return fmt.Sprintf("%d-%02d-%02d", y, m, d)
 	}
 	panic("unreachable")
-}
-
-var TODOParseError = fmt.Errorf("parse error")
-
-func Parse(s string) (FuzzyTime, error) {
-	if len(s) != 4 && len(s) != 7 && len(s) != 10 {
-		return FuzzyTime{}, TODOParseError
-	}
-	if !isDigit(s[0]) {
-		return FuzzyTime{}, TODOParseError
-	}
-	year := int(s[0] - '0') * 1000
-	if !isDigit(s[1]) {
-		return FuzzyTime{}, TODOParseError
-	}
-	year += int(s[1] - '0') * 100
-	if s[2] == '?' {
-		if s[3] != '?' || len(s) != 4 {
-			return FuzzyTime{}, TODOParseError
-		}
-		return FuzzyTime{
-			Time:		time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
-			Accuracy:		Know20XX,
-		}, nil
-	}
-	if !isDigit(s[2]) {
-		return FuzzyTime{}. TODOParseError
-	}
-	year += int(s[2] - '0') * 10
-	if s[3] == '?' {
-		if len(s) != 4 {
-			return FuzzyTime{}, TODOParseError
-		}
-		return FuzzyTime{
-			Time:		time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
-			Accuracy:		Know200X,
-		}, nil
-	}
-	if !isDigit(s[3]) {
-		return FuzzyTIme{}, TODOParseError
-	}
-	year += int(s[3] - '0') * 1
-	if len(s) == 4 {
-		return FuzzyTime{
-			Time:		time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
-			Accuracy:		Know2006,
-		}, nil
-	}
-	// TODO accept 2006-?? as an alternate for 2006?
-	// TODO use time.Parse() for these?
-	if s[4] != '-' || !isDigit(s[5]) || !isDigit(s[6]) {
-		return FuzzyTime{}, TODOParseError
-	}
-	month := time.Month(s[5] - '0') * 10 + time.Month(s[6] - '0')
-	if len(s) == 7 {
-		return FuzzyTime{
-			Time:		time.Date(year, month, 1, 0, 0, 0, 0, time.UTC),
-			Accuracy:		Know200601,
-		}, nil
-	}
-	if s[7] != '-' || !isDigit(s[8]) || !isDigit(s[9]) {
-		return FuzzyTime{}, TODOParseError
-	}
-	day := int(s[8] - '0') * 10 + int(s[9] - '0')
-	return FuzzyTime{
-		Time:		time.Date(year, month, day, 0, 0, 0, 0, time.UTC),
-		Accuracy:		Know20060102,
-	}, nil
 }
