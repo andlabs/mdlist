@@ -7,6 +7,22 @@ import (
 )
 
 func TestPackage(t *testing.T) {
+	t.Run("ZeroTime", func(t *testing.T) {
+		if ok := (FuzzyTime{}).IsZero(); !ok {
+			t.Errorf("FuzzyTime{}.IsZero(): got %v, want true", ok)
+		}
+		if str := (FuzzyTime{}).String(); str != "" {
+			t.Errorf("FuzzyTime{}.String(): got %q, want %q", str, "")
+		}
+		ft, err := Parse("")
+		if err != nil {
+			t.Fatalf("Parse(\"\"): got error %v, want no error", err)
+		}
+		if ok := ft.IsZero(); !ok {
+			t.Fatalf("Parse(\"\").IsZero(): got %v, want true", ok)
+		}
+	})
+
 	for _, tc := range []struct {
 		str			string
 		invalid		bool
@@ -15,10 +31,6 @@ func TestPackage(t *testing.T) {
 		day			int
 		accuracy		Accuracy
 	}{
-		{
-			str:			"",
-			invalid:		true,
-		},
 		{
 			str:			"abc",
 			invalid:		true,

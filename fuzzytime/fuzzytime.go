@@ -21,8 +21,8 @@ const (
 
 // FuzzyTime is a fuzzy time.Time, which stores date values that
 // can have some parts be unknown; see the Accuracy type to see
-// how. The zero FuzzyTime is invalid and produces undefined
-// behavior (TODO).
+// how. The zero FuzzyTime is valid; it represents a totally unknown
+// time.
 type FuzzyTime struct {
 	time		time.Time
 	accuracy	Accuracy
@@ -34,7 +34,11 @@ func isDigit(c byte) bool {
 	return c >= '0' && c <= '9'
 }
 
+// TODO say that Parse("") yields the zero time
 func Parse(s string) (FuzzyTime, error) {
+	if s == "" {
+		return FuzzyTime{}, nil
+	}
 	if len(s) != 4 && len(s) != 7 && len(s) != 10 {
 		return FuzzyTime{}, TODOParseError
 	}
@@ -108,11 +112,21 @@ func (f FuzzyTime) Date() (year int, month time.Month, day int) {
 }
 
 // Accuracy returns the accuracy of f.
+// The Accuracy of the zero FuzzyTime is undefined.
 func (f FuzzyTime) Accuracy() Accuracy {
 	return f.accuracy
 }
 
+// IsZero returns whether f represents the zero FuzzyTime.
+func (f FuzzyTime) IsZero() bool {
+	return f.time.IsZero()
+}
+
+// TODO document the string of the zero time is empty
 func (f FuzzyTime) String() string {
+	if f.IsZero() {
+		return ""
+	}
 	y, m, d := f.time.Date()
 	switch f.accuracy {
 	case Know20XX:
