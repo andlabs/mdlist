@@ -1,6 +1,10 @@
 // 1 august 2018
 package mdlist
 
+import (
+	"github.com/andlabs/mdlist/fuzzytime"
+)
+
 type GameType int
 const (
 	Hardware		GameType = iota
@@ -45,7 +49,7 @@ type Release struct {
 	Nonphysical		bool		// TODO NonPhysical? Digital?
 	Unlicensed		bool
 	Prototype			bool
-	ReleaseDate		FuzzyTime
+	ReleaseDate		fuzzytime.FuzzyTime
 	ReleaseDateSource	string
-	BuildDate			FuzzyTime
+	BuildDate			fuzzytime.FuzzyTime
 }
