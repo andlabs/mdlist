@@ -29,6 +29,13 @@ type dbJSON struct {
 //	AssetMappings		[]*AssetMapping
 }
 
+func New() *DB {
+	return &DB{
+		games:	make(map[ID]*Game),
+		releases:	make(map[ID]*Release),
+	}
+}
+
 func Read(r io.Reader) (*DB, error) {
 	x := dbJSON{}
 	err := json.NewDecoder(r).Decode(&x)
@@ -110,7 +117,32 @@ func (db *DB) AddRelease(game *Game, title string, romanized string, titleSource
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
-	panic("TODO")
+	relID := db.nextRelease
+	for {
+		if _, ok := db.releases[relID]; !ok {
+			break
+		}
+		relID++
+	}
+	db.nextRelease = relID + 1
+	r := &Release{
+		id:				relID,
+		game:			game.ID(),
+		title:				title,
+		romanized:		romanized,
+		titleSource:		titleSource,
+		publisher:			publisher,
+		serialNumber:		serialNumber,
+		region:			region,
+		nonphysical:		nonphysical,
+		unlicensed:		unlicensed,
+		prototype:		prototype,
+		releaseDate:		releaseDate,
+		releaseDateSource:	releaseDateSource,
+		buildDate:			buildDate,
+	}
+	db.releases[relID] = r
+	return r, nil
 }
 
 func (db *DB) EnumReleases(f func(r *Release) error) error {
