@@ -1,6 +1,10 @@
 // 1 august 2018
 package db
 
+import (
+	"encoding/json"
+)
+
 type GameType int
 const (
 	Hardware		GameType = iota
@@ -19,13 +23,8 @@ const (
 )
 
 type Game struct {
-	id		ID
 	ty		GameType
 	platform	Platform
-}
-
-func (g *Game) ID() ID {
-	return g.id
 }
 
 func (g *Game) Type() GameType {
@@ -37,8 +36,31 @@ func (g *Game) Platform() Platform {
 }
 
 var dbGameOps interface {
-	InsertGame(ty GameType, platform Platform) (ID, error)
-	LookupGame(id ID) (*Game, error)
-	DeleteGame(id ID) error
-	EnumGames(f func(*Game) error) error
+	AddGame(ty GameType, platform Platform) (ID, error)
+	EnumGames(f func(id ID, g *Game) error) error
 } = &DB{}
+
+func (g *Game) MarshalJSON() ([]byte, error) {
+	x := struct {
+		Type		GameType
+		Platform	Platform
+	}{
+		Type:	g.ty,
+		Platform:	g.platform,
+	}
+	return json.Marshal(x)
+}
+
+func (g *Game) UnmarshalJSON(b []byte) error {
+	var x struct {
+		Type		GameType
+		Platform	Platform
+	}
+	err := json.Unmarshal(b, &x)
+	if err != nil {
+		return err
+	}
+	g.ty = x.Type
+	g.platform = x.Platform
+	return nil
+}
