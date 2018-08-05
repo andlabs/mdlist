@@ -2,9 +2,12 @@
 package db
 
 import (
+	"io"
 	"sync"
 	"encoding/json"
 	"sort"
+
+	"github.com/andlabs/mdlist/fuzzytime"
 )
 
 type ID int
@@ -51,7 +54,7 @@ func (db *DB) Write(w io.Writer) error {
 
 	x := dbJSON{
 		Games:		make([]*Game, 0, len(db.games)),
-		Releases:		make([]*Releases, 0, len(db.releases)),
+		Releases:		make([]*Release, 0, len(db.releases)),
 	}
 	for _, g := range db.games {
 		x.Games = append(x.Games, g)
@@ -66,7 +69,7 @@ func (db *DB) Write(w io.Writer) error {
 	sort.Slice(x.Releases, func(i, j int) bool {
 		return x.Releases[i].ID() < x.Releases[j].ID()
 	})
-	return json.NewEncoder(w).Marshal(x)
+	return json.NewEncoder(w).Encode(x)
 }
 
 func (db *DB) AddGame(ty GameType, platform Platform) (*Game, error) {

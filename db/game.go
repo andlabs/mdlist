@@ -8,7 +8,7 @@ import (
 type GameType int
 const (
 	Hardware		GameType = iota
-	Game
+	GameGame		// TODO find a good name for either this or the Game struct
 	Accessory
 )
 

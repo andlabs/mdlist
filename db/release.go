@@ -2,6 +2,8 @@
 package db
 
 import (
+	"encoding/json"
+
 	"github.com/andlabs/mdlist/fuzzytime"
 )
 
@@ -81,7 +83,7 @@ func (r *Release) Prototype() bool {
 }
 
 func (r *Release) ReleaseDate() fuzzytime.FuzzyTime {
-	return r.releeaseDate
+	return r.releaseDate
 }
 
 func (r *Release) ReleaseDateSource() string {
@@ -92,8 +94,8 @@ func (r *Release) BuildDate() fuzzytime.FuzzyTime {
 	return r.buildDate
 }
 
-var dbReleaseOps = interface {
-	AddRelease(game ID, title string, romanized string, titleSource string, publisher string, serialNumber string, region Region, nonphysical bool, unlicensed bool, prototype bool, releaseDate fuzzytime.FuzzyTime, releaseDateSource string, buildDate fuzzytime.FuzzyTime) (*Release, error)
+var dbReleaseOps interface {
+	AddRelease(game *Game, title string, romanized string, titleSource string, publisher string, serialNumber string, region Region, nonphysical bool, unlicensed bool, prototype bool, releaseDate fuzzytime.FuzzyTime, releaseDateSource string, buildDate fuzzytime.FuzzyTime) (*Release, error)
 	EnumReleases(f func(r *Release) error) error
 } = &DB{}
 
@@ -114,7 +116,7 @@ type releaseJSON struct {
 	BuildDate			string
 }
 
-func (r *Region) MarshalJSON() ([]byte, error) {
+func (r *Release) MarshalJSON() ([]byte, error) {
 	return json.Marshal(releaseJSON{
 		ID:				r.id,
 		Game:			r.game,
