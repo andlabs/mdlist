@@ -39,11 +39,27 @@ func TestPackage(t *testing.T) {
 			invalid:		true,
 		},
 		{
+			str:			"19?2",
+			invalid:		true,
+		},
+		{
+			str:			"19??-08",
+			invalid:		true,
+		},
+		{
 			str:			"199?",
 			year:			1990,
 			month:		1,
 			day:			1,
 			accuracy:		Know200X,
+		},
+		{
+			str:			"199X",
+			invalid:		true,
+		},
+		{
+			str:			"199?-08",
+			invalid:		true,
 		},
 		{
 			str:			"1992",
@@ -202,6 +218,18 @@ func TestPackage(t *testing.T) {
 		},
 		{
 			str:			"1992-8-15",
+			invalid:		true,
+		},
+		{
+			str:			"1992-08.15",
+			invalid:		true,
+		},
+		{
+			str:			"1992-08-a5",
+			invalid:		true,
+		},
+		{
+			str:			"1992-08-1b",
 			invalid:		true,
 		},
 		{
