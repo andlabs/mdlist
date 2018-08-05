@@ -23,8 +23,13 @@ const (
 )
 
 type Game struct {
+	id		ID
 	ty		GameType
 	platform	Platform
+}
+
+func (g *Game) ID() ID {
+	return g.id
 }
 
 func (g *Game) Type() GameType {
@@ -36,30 +41,31 @@ func (g *Game) Platform() Platform {
 }
 
 var dbGameOps interface {
-	AddGame(ty GameType, platform Platform) (ID, error)
-	EnumGames(f func(id ID, g *Game) error) error
+	AddGame(ty GameType, platform Platform) (*Game, error)
+	EnumGames(f func(g *Game) error) error
 } = &DB{}
 
+type gameJSON struct {
+	ID		ID
+	Type		GameType
+	Platform	Platform
+}
+
 func (g *Game) MarshalJSON() ([]byte, error) {
-	x := struct {
-		Type		GameType
-		Platform	Platform
-	}{
+	return json.Marshal(gameJSON{
+		ID:		g.id,
 		Type:	g.ty,
 		Platform:	g.platform,
-	}
-	return json.Marshal(x)
+	})
 }
 
 func (g *Game) UnmarshalJSON(b []byte) error {
-	var x struct {
-		Type		GameType
-		Platform	Platform
-	}
+	var x gameJSON
 	err := json.Unmarshal(b, &x)
 	if err != nil {
 		return err
 	}
+	g.id = x.ID
 	g.ty = x.Type
 	g.platform = x.Platform
 	return nil
