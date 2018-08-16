@@ -17,6 +17,7 @@ const (
 	MegaDrive Platform = iota
 	MegaCD
 	Mega32X
+	MegaLD
 	Pico
 	Arcade
 	Teradrive
